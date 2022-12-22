@@ -1,0 +1,122 @@
+@charset "utf-8";
+
+* {
+    margin: 0px;
+    user-select: none;
+    -webkit-user-drag: none;
+    -ms-user-select: none;
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    color: darkslategray;
+}
+
+html, body {
+    background-color: darkslategray;
+}
+
+#content {
+    position: relative;
+    top: 2rem;
+    left: 5rem;
+    width: 50rem;
+    height: 30rem;
+    background-color: whitesmoke;
+    border-radius: 2%;
+}
+
+#content::after {
+    z-index: 100;
+    content: "ドラックで振ってミックス！";
+    position: absolute;
+    top: 25%;
+    left: 25%;
+    margin: auto;
+    font-weight: bold;
+    font-size: 2rem;
+    animation: flavor 3s 0s infinite alternate;
+}
+
+@keyframes flavor {
+    from { opacity: 100%; }
+    to { opacity: 50%; }
+}
+
+#cola {
+    position: absolute;
+    z-index: 50;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    margin: auto;
+}
+
+svg * {
+    fill: darkslategray;
+}
+
+#city {
+    position: absolute;
+    opacity: 75%;
+    top: 100%;
+    transition: transform 0.3s ease-out;
+    transform: translateY(-100%);
+    transform-origin: center center;
+}
+
+#cloud {
+    opacity: 0%;
+    transition: transform 1s linear;
+}
+
+#score {
+    position: absolute;
+    top: 25%;
+    left: 25%;
+    margin: auto;
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+#content[flag='mix']::after {
+    animation: none;
+    opacity: 100%;
+    content: '';
+}
+
+#content[flag='finish']::after {
+    content: 'そこまで…！';
+    left: 35%;
+    animation: none;
+    transition: opacity 2s ease;
+    opacity: 0%;
+}
+
+#content[flag='splash']::after {
+    content: '';
+    animation: none;
+}
+
+#content[flag='omg']::after {
+    content: 'orz';
+    left: 60%;
+}
+
+#content[flag='good']::after {
+    content: 'よき';
+    left: 60%;
+    color: darkgrey;
+}
+
+#content[flag='great']::after {
+    content: 'いい感じ';
+    left: 60%;
+    color: blueviolet;
+}
+
+#content[flag='perfect']::after {
+    content: 'ヤバみあふれてる';
+    left: 60%;
+    color: gold;
+}
