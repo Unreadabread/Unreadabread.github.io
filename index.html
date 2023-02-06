@@ -1,25 +1,42 @@
 <!DOCTYPE html>
 <html lang="jp">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="format-detection" content="telephone=no,email=no,address=no">
-    <meta name="description" content="炭酸の缶をいっぱいシャカシャカしてどれだけ高く飛ばせるかを競うゲームです">
-    <title>炭酸しゃかしゃか</title>
-    <link rel="stylesheet" href="./style.css">
-</head>
-<body>
-    <div id="content">
-        <svg id="cola" height="100" viewBox="0 0 319.32 512">
-            <rect x="28.5" width="262.32" height="25.28"/>
-            <path d="M131.22,36.87s-27.4,35.83-31.6,43.2-3.16,10.53-3.16,21.07V450.89c0,13.7,3.9,31.16,13.69,35.83,19.9,9.47,12.53,25.28,33.71,25.28H368.14c21.18,0,13.81-15.81,33.71-25.28,9.79-4.68,13.69-22.13,13.69-35.83V101.14c0-10.54,1.07-13.7-3.16-21.07s-31.6-43.2-31.6-43.2" transform="translate(-96.34)"/>
-            <path id="line" d="M349.63,36.87c-14.06,17.23-49.84,82.29-12.26,272.87,7.37,37.33,11.06,124.83-12.7,167.49H231c32.12-39.5,74.79-116.93,62.14-208.59C277,151.74,274.37,80.16,291,36.87Z" transform="translate(-96.34)" style="fill: whitesmoke"/>
-        </svg>
-        <svg id="city" width="100%" viewBox="0 0 512 117.39">
-            <path d="M496.39,297.63v-6.25H485.57v5h-2.23V285.55H473.08V231.23h-4.16v-2.5h-9v3.13H443.1v61.6h-6.24v-1.25h-6.45v2.5h-4.17v-3.12h-3.95v3.12h-8.74l-.21-3.95H410l-3.33,1v4.37h-8.53V262h-7.7v-4.16H376.29v2.5h-6.66v2.29h-9.57V291H347v1.45h-2.29v-3.33H327.17V291H325.3v2.91h-3.54V276.6H308.65v-3.12h-2.91v3.12h-2.5v-4.37h-2.5v-69.1h-1.25v-1.87h-2.91V199h2.71v-1.66H275.77V199h2.08v3.54h-7.08v68.27l-4.37-1-2.5.62v2.5h-3.54V211.81h-.76v-3.68h.56V207h-19.3v1.33h1.36v2.53h-4V216L237,217.29V274.2h-5.83v3.49h-2.32v6.8H231v2.72h-2.72v6.21h-2.52v-8.15h-4.86v-1.36h-4.27v1.94h-4.27v-1.36h-5.43v-4.27h-8.16V219.79l-3.88-.78v-4.27h.78V212.8l-16.51-1-7.84.77v2.53h4.35l.2,3.69-9.71,1.35v65.94h-2.39v-6.93h-3.88V277H156V273.9h-5.55v1.67H144.3V273.9H127.38v7.49h-4.45v11.94H119.6v-4.72h-3.32v-1.94h-6.11l-1.11-1.11L108,246.71s-2.22-4.17-3.61-4.73V240h-8.6V242H97.4v11.11l-3.33,5.55v21.09H87.14v4.44H82.7v-3.05H70.49V262H61.88v19.7H56.61v7.22H47.45v-5.83H40.79v9.16H37v-5H26.64v7.5H9.16v7.35H0V314.7H512V297.63Z" transform="translate(0 -197.31)"/>
-        </svg>
-    </div>
-    <script src="./script.js"></script>
-</body>
-</html>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no,email=no,address=no">
+<meta name="description" content="炭酸の缶をいっぱいシャカシャカしてどれだけ高く飛ばせるかを競うゲームです">
+<title>炭酸しゃかしゃか</title>
+<link rel="stylesheet" href="./style.css">
+
+<main id="content">
+	<div id="game">
+		<p id="text">ドラックで振ってミックス！</p>
+		<svg id="can" height="100" viewBox="0 0 346.79 512">
+			<use href="./img/can.svg#0"/>
+		</svg>
+		<svg id="city" width="100%" viewBox="0 0 512 117">
+			<use href="./img/city.svg#city"/>
+		</svg>
+	</div>
+	<nav id="help">
+		<h1>遊び方</h1>
+		<ol>
+			<li>真ん中の缶を10秒の間振る！
+			<li>缶が勝手に飛ぶのを見る
+			<li>何m飛んだかを見る
+		</ol>
+	</nav>
+</main>
+
+<footer>
+	<ul>
+		<li><a href="https://github.com/Unreadabread/Unreadabread.github.io"  target="_blank" rel="noopener noreferrer">
+			<svg width="1rem" viewBox="0 0 512 512">
+				<use href="./img/icon.svg#source"/>
+			</svg>
+			GITHUB
+		</a>
+	</ul>
+</footer>
+
+<script src="./script.js" onload="onLoad();"></script>
