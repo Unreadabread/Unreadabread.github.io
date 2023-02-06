@@ -6,7 +6,7 @@ const flags = {
 }
 
 function onLoad() {
-    game = document.getElementById('game'), text = document.getElementById('text'), city = document.getElementById('city'), can = document.getElementById('can');
+    text = document.getElementById('text'), city = document.getElementById('city'), can = document.getElementById('can');
     game.addEventListener('mousedown', onDown)
     game.addEventListener('touchstart', event => {
         event.preventDefault()
