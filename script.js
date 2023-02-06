@@ -39,7 +39,7 @@ function onDown() {
         text.style.animation = 'none'
         text.style.color = 'darkslategray'
 
-        var second = 1
+        var second = 10
         let timerId = setInterval(() => {
             text.textContent = --second
             if (second == 0) {
