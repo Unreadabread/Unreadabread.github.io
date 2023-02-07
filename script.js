@@ -1,38 +1,44 @@
-let game = document.getElementById('game'), text = document.getElementById('text'), city = document.getElementById('city'), can = document.getElementById('can');
-const defHTML = game.innerHTML;
+let game = document.getElementById('game'), text = document.getElementById('text'), city = document.getElementById('city'), can = document.getElementById('can')
+const defHTML = game.innerHTML
 const flags = {
-    holding: false, shuffling: false, mixed: false, replay: false,
+    holding: false, shuffling: false, mixed: false,
     total: 0, durability: 0
 }
+const ranks = [
+    { score: 10000, text: 'えぐみ限界突破してる', color: 'gold' },
+    { score: 7000, text: 'ヤバみあふれてる', color: 'blueviolet' },
+    { score: 4000, text: 'いい感じ', color: 'darkcyan' },
+    { score: 2000, text: 'よき', color: 'darkgray' },
+    { score: -1, text: 'orz', color: undefined }
+]
 
 function onLoad() {
-    text = document.getElementById('text'), city = document.getElementById('city'), can = document.getElementById('can');
-    game.addEventListener('mousedown', onDown)
-    game.addEventListener('touchstart', event => {
+    text = document.getElementById('text'), city = document.getElementById('city'), can = document.getElementById('can')
+    var movement = 0
+    can.addEventListener('mousedown', onDown)
+    can.addEventListener('touchstart', event => {
         event.preventDefault()
+        movement = 0
         onDown()
-    })
-    game.addEventListener('mousemove', onMove)
+    }, false)
+    game.addEventListener('mousemove', event => onMove(event.clientY, event.movementY))
     game.addEventListener('touchmove', event => {
-        event.preventDefault()
-        onMove()
-    })
+        if (flags.shuffling) {
+            event.preventDefault()
+            const touch = event.changedTouches[0]
+            onMove(touch.clientY, movement - touch.clientY)
+            movement = touch.clientY   
+        }
+    }, false)
     document.addEventListener('mouseup', onUp)
     document.addEventListener('touchend', event => {
-        event.preventDefault()
+        if (flags.shuffling) event.preventDefault()
         onUp()
     })
+    
 }
 
 function onDown() {
-    if (flags.replay) {
-        game.innerHTML = defHTML;
-        flags.holding = flags.shuffling = flags.mixed = flags.replay = false
-        flags.total = flags.durability = 0
-        onLoad()
-        return
-    }
-
     flags.holding = true
     if (!flags.mixed && !flags.shuffling) {
         text.textContent = ''
@@ -40,10 +46,10 @@ function onDown() {
         text.style.color = 'darkslategray'
 
         var second = 10
-        let timerId = setInterval(() => {
+        const id = setInterval(() => {
             text.textContent = --second
             if (second == 0) {
-                clearInterval(timerId)
+                clearInterval(id)
                 finish()
             }
         }, 1000)
@@ -51,12 +57,12 @@ function onDown() {
     }
 }
 
-function onMove(event) {
+function onMove(y = 0, move = 0) {
     if (flags.holding && flags.shuffling) {
-        flags.total += Math.abs(Math.floor(event.movementY / 10))
+        flags.total += Math.abs(Math.floor(move / 10))
 
-        let gameHeight = game.clientHeight / 2, canHeight = can.clientHeight / 2
-        can.style.transform = 'translateY(' + Math.min(Math.max(event.clientY - 300, -gameHeight + canHeight), gameHeight - canHeight) + 'px)'
+        let gameHeight = game.clientHeight / 2
+        can.style.transform = 'translateY(' + Math.min(Math.max(y - 325, -gameHeight), gameHeight - can.clientHeight) + 'px)'
 
         if (flags.durability == 0 && flags.total >= 3000) {
             let texture = can.lastElementChild
@@ -94,33 +100,44 @@ function splash() {
     text.style.color = 'darkslategray'
 
     let score = -1
-    let id = setInterval(() => {
+    const id = setInterval(() => {
         text.textContent = '記録: ' + ++score + 'm'
 
-        if (score == 10000) text.style.color = 'gold'
-        else if (score == 7000) text.style.color = 'blueviolet'
-        else if (score == 4000) text.style.color = 'darkcyan'
-        else if (score == 2000) text.style.color = 'darkgray'
-        else if (score >= flags.total) {
+        if (score < flags.total) for (let i = 0; i < ranks.length; i++) {
+            const rank = ranks[i];
+            if (score == rank.score) {
+                text.style.color = rank.color
+                break
+            }
+        } else {
             clearInterval(id)
             can.style.transform = 'translate(-50%, 200%) scale(0%) rotate(3600deg)'
 
             setTimeout(() => {
-                if (flags.total >= 10000) text.textContent += ' えぐみ限界突破してる'
-                else if (flags.total >= 7000) text.textContent += ' ヤバみあふれてる'
-                else if (flags.total >= 4000) text.textContent += ' いい感じ'
-                else if (flags.total >= 2000) text.textContent += ' よき'
-                else text.textContent += ' orz'
+                for (let i = 0; i < ranks.length; i++) {
+                    const rank = ranks[i];
+                    if (flags.total >= rank.score) {
+                        text.textContent += ' ' + rank.text
+                        break
+                    }
+                }
 
-                let replay = document.createElement('p')
+                const replay = document.createElement('p')
                 replay.textContent = 'やり直す？'
                 replay.id = "replay"
-                flags.replay = true
+                replay.ontouchstart = replay.onmousedown = flesh
 
                 game.append(replay)
             }, 1000)
         }
     }, 1);
+}
+
+function flesh(event) {
+    event.stopPropagation()
+    game.innerHTML = defHTML
+    onLoad()
+    flags.holding = flags.shuffling = flags.mixed = flags.total = flags.durability = 0
 }
 
 /**

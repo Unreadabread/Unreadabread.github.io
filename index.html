@@ -5,17 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no,email=no,address=no">
 <meta name="description" content="炭酸の缶をいっぱいシャカシャカしてどれだけ高く飛ばせるかを競うゲームです">
+<meta name="theme-color" content="darkslategray">
+<meta property="og:url" content="https://unreadabread.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="炭酸しゃかしゃか">
 <title>炭酸しゃかしゃか</title>
 <link rel="stylesheet" href="./style.css">
+<link rel="icon" type="image/png" href="img/icon.png" sizes="32x32" />
 
-<main id="content">
+<main>
 	<div id="game">
 		<p id="text">ドラックで振ってミックス！</p>
-		<svg id="can" height="100" viewBox="0 0 346.79 512">
-			<use href="./img/can.svg#0"/>
-		</svg>
 		<svg id="city" width="100%" viewBox="0 0 512 117">
 			<use href="./img/city.svg#city"/>
+		</svg>
+		<svg id="can" height="100" viewBox="0 0 346.79 512">
+			<use href="./img/can.svg#0"/>
 		</svg>
 	</div>
 	<nav id="help">
@@ -29,14 +34,12 @@
 </main>
 
 <footer>
-	<ul>
-		<li><a href="https://github.com/Unreadabread/Unreadabread.github.io"  target="_blank" rel="noopener noreferrer">
-			<svg width="1rem" viewBox="0 0 512 512">
-				<use href="./img/icon.svg#source"/>
-			</svg>
-			GITHUB
-		</a>
-	</ul>
+	<a href="https://github.com/Unreadabread/Unreadabread.github.io"  target="_blank" rel="noopener noreferrer">
+		<svg width="1rem" viewBox="0 0 512 512">
+			<use href="./img/icon.svg#source"/>
+		</svg>
+		GITHUB
+	</a>
 </footer>
 
 <script src="./script.js" onload="onLoad();"></script>

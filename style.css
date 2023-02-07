@@ -11,7 +11,8 @@
     -khtml-user-select: none;
     -webkit-user-select: none;
     scrollbar-width: thin;
-    scrollbar-color: whitesmoke rgb(23, 42, 42);
+    scrollbar-color: whitesmoke #172a2a;
+    font-family: "Yu Gothic",YuGothic,"Hiragino Kaku Gothic ProN","ヒラギノ角ゴ ProN W3","Avenir","Helvetica Neue","Helvetica","Arial",sans-serif;
 }
 
 ::-webkit-scrollbar {
@@ -24,7 +25,7 @@
 }
 
 ::-webkit-scrollbar-track {
-    background-color: rgb(23, 42, 42);
+    background-color: #172a2a;
     border: 2px solid darkslategray;
     border-radius: 1rem;
 }
@@ -35,20 +36,15 @@ html, body {
     min-width: 26rem;
     min-height: 100vh;
     background-color: darkslategray;
-    font-family: "Yu Gothic",YuGothic,"Hiragino Kaku Gothic ProN","ヒラギノ角ゴ ProN W3","Avenir","Helvetica Neue","Helvetica","Arial",sans-serif;
 }
 
 main {
     margin: 0 10%;
-    background-color: darkslategray;
+    padding: 2rem 0;
 }
 
 svg {
     fill: darkslategray;
-}
-
-#content {
-    padding: 2rem 0;
 }
 
 #game {
@@ -65,49 +61,47 @@ svg {
     text-align: center;
     font-weight: bold;
     font-size: 2rem;
+    color: darkslategray;
     animation: flavor 3s 0s infinite alternate;
 }
 
 @keyframes flavor {
     from { color: darkslategray; }
-    to { color: rgba(47, 79, 79, 0.5); }
+    to { color: #2f4f4f80; }
 }
 
 #can {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 50%;
     left: 0;
-    bottom: 0;
-    transform: translateY(100px);
+    right: 0;
+    margin: auto;
     transform-origin: center center;
-    margin: auto auto;
 }
 
 #city {
     position: absolute;
-    fill: rgba(47, 79, 79, 0.75);
     bottom: 0;
     margin: auto;
+    fill: #2f4f4fbf;
 }
 
 #replay {
-    position: absolute;
+    position: relative;
     cursor: pointer;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 10rem;
+    width: 7.5rem;
+    margin: auto;
     padding: 1rem 5rem;
     font-weight: bold;
     font-size: 1.5rem;
-    text-align: center;
     border-radius: 1rem;
     color: darkslategray;
 }
 
 #replay:hover {
-    color: rgba(47, 79, 79, 0.75);
-    background-color: rgba(47, 79, 79, 0.25);
+    color: #2f4f4fbf;
+    background-color: #2f4f4f40;
 }
 
 #help {
@@ -145,25 +139,11 @@ footer {
     top: 100%;
     width: 100%;
     text-align: right;
-    background-color: rgb(23, 42, 42);
-}
-
-footer li {
-    display: inline-flex;
-}
-
-footer li::marker {
-    content: '';
-}
-
-footer li + li a::before {
-    content: '|';
-    position: relative;
-    left: -2rem;
-    color: whitesmoke;
+    background-color: #172a2a;
 }
 
 footer a {
+    display: inline-flex;
     cursor: pointer;
     padding: 1rem 2rem;
     font-weight: bold;
@@ -172,11 +152,19 @@ footer a {
     transition: color .5s ease-out;
 }
 
-footer li:hover a {
-    color: rgba(245, 245, 245, 0.5);
+footer a:hover {
+    color: #f5f5f580;
 }
 
-footer svg {
+footer a svg {
     vertical-align: text-bottom;
-    fill: whitesmoke;
+    margin-right: .5rem;
+    fill: #f5f5f580;
+}
+
+footer a + a::before {
+    content: '';
+    position: relative;
+    left: -2rem;
+    border-left: 0.1rem solid #f5f5f580;
 }
