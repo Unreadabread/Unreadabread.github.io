@@ -1,45 +1,41 @@
 <!DOCTYPE html>
 <html lang="jp">
 <meta charset="UTF-8">
+<meta http-equiv="refresh" content="0;URL=/can/">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no,email=no,address=no">
-<meta name="description" content="炭酸の缶をいっぱいシャカシャカしてどれだけ高く飛ばせるかを競うゲームです">
-<meta name="theme-color" content="darkslategray">
-<meta property="og:url" content="https://unreadabread.github.io/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="炭酸しゃかしゃか">
+<link rel="icon" type="image/png" href="/public/small_can.png" sizes="32x32"/>
+<link rel="stylesheet" href="/public/framework_green.css">
 <title>炭酸しゃかしゃか</title>
-<link rel="stylesheet" href="./style.css">
-<link rel="icon" type="image/png" href="img/icon.png" sizes="32x32" />
 
-<main>
-	<div id="game">
-		<p id="text">ドラックで振ってミックス！</p>
-		<svg id="city" width="100%" viewBox="0 0 512 117">
-			<use href="./img/city.svg#city"/>
-		</svg>
-		<svg id="can" height="100" viewBox="0 0 346.79 512">
-			<use href="./img/can.svg#0"/>
-		</svg>
-	</div>
-	<nav id="help">
-		<h1>遊び方</h1>
-		<ol>
-			<li>真ん中の缶を10秒の間振る！
-			<li>缶が勝手に飛ぶのを見る
-			<li>何m飛んだかを見る
-		</ol>
-	</nav>
+<header>
+    <h1>Unreadabread</h1>
+	<ul>
+		<li><a href="/can">
+			<svg height="100" viewBox="0 0 346.79 512">
+				<use href="/public/icon.svg#can"/>
+			</svg>
+			<span>炭酸しゃかしゃか</span>
+		</a>
+		<!-- <li><a href="/train">
+			<img src="/public/train/icon_big.png">
+			<span>電車のりかえ(作り途中…)</span>
+		</a> -->
+	</ul>
+</header>
+
+<main style="transform: translateY(100%); color: whitesmoke; text-align: center;">
+    <h1>ちょっとまってね</h1>
+    もし何も起きなかったら<br>
+    上のやつから移動してほしみ
 </main>
 
 <footer>
-	<a href="https://github.com/Unreadabread/Unreadabread.github.io"  target="_blank" rel="noopener noreferrer">
-		<svg width="1rem" viewBox="0 0 512 512">
-			<use href="./img/icon.svg#source"/>
-		</svg>
-		GITHUB
-	</a>
+    <a href="https://github.com/Unreadabread/Unreadabread.github.io" target="_blank" rel="noopener noreferrer">
+        <svg width="15" viewBox="0 0 512 512">
+            <use href="/public/icon.svg#source"/>
+        </svg>
+        GITHUB
+    </a>
 </footer>
-
-<script src="./script.js" onload="onLoad();"></script>

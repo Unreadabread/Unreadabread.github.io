@@ -1,0 +1,131 @@
+@charset "utf-8";
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    user-select: none;
+    -webkit-user-drag: none;
+    -ms-user-select: none;
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    scrollbar-width: thin;
+    scrollbar-color: whitesmoke #212121;
+	color: whitesmoke;
+    font-family: "Yu Gothic",YuGothic,"Hiragino Kaku Gothic ProN","ヒラギノ角ゴ ProN W3","Avenir","Helvetica Neue","Helvetica","Arial",sans-serif;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: whitesmoke;
+    border-radius: 1rem;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #212121;
+    border: 2px solid #212121;
+    border-radius: 1rem;
+}
+
+html, body {
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    min-width: 26rem;
+    min-height: 100vh;
+    background-color: #212121;
+}
+
+body {
+    background-color: #353535;
+}
+
+:where(header, footer) a:hover {
+    color: #f5f5f580;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #212121;
+    margin-bottom: 3rem;
+}
+
+header h1 {
+    padding: 1rem;
+}
+
+header ul {
+    list-style: none;
+    padding: 1rem;
+}
+
+header li {
+    display: inline-flex;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 1rem;
+}
+
+header a {
+    display: inline-flex;
+    align-items: center;
+    font-weight: bold;
+    text-decoration-line: none;
+    transition: color .5s ease-out;
+}
+
+header a :where(svg, img) {
+    height: 2rem;
+    vertical-align: text-bottom;
+    margin-right: .5rem;
+    fill: darkslategray;
+}
+
+header a:hover :where(svg, img) {
+    transform: scale(1.2, 1.2) rotate(15deg);
+}
+
+@media (max-width:650px) {
+    header a span {
+        display: none;
+    }
+}
+
+main {
+    margin: 0 10%;
+}
+
+footer {
+    position: sticky;
+    top: 100%;
+    width: 100%;
+    text-align: right;
+    margin-top: 3rem;
+    background-color: #212121;
+}
+
+footer a {
+    display: inline-flex;
+    cursor: pointer;
+    padding: 1rem 2rem;
+    font-weight: bold;
+    text-decoration-line: none;
+    transition: color .5s ease-out;
+}
+
+footer a svg {
+    vertical-align: text-bottom;
+    margin-right: .5rem;
+    fill: #f5f5f580;
+}
+
+footer a + a::before {
+    content: '';
+    position: relative;
+    left: -2rem;
+    border-left: 0.1rem solid #f5f5f580;
+}
