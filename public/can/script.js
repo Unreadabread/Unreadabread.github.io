@@ -6,7 +6,7 @@ import { TextGeometry } from 'three/geometries/TextGeometry.js'
 const _fontLoader = new FontLoader(), _svgLoader = new SVGLoader(), _raycaster = new THREE.Raycaster(), _boundingBox = new THREE.Box3()
 const _scene = new THREE.Scene(), _camera = new THREE.OrthographicCamera()
 
-const GAME = { canY: null, pressed: false, entered: false, score: null, speed: 0, velocity: 0, closed: false, timeCount: 3, lastTime: 0, lastPressed: false, ground: false, splashed: false, shownReset: false }
+const GAME = { canY: null, pressed: false, entered: false, score: null, speed: 0, velocity: 0, closed: false, timeCount: 10, lastTime: 0, lastPressed: false, ground: false, splashed: false, shownReset: false }
 const DEF_GAME = { ...GAME }
 const TEMP = { font: null, label: null, can: null, city: null, resetButton: null, canvasHeight: 480, center: 125, aspect: 0 }
 const COLORS = { darkslategray: 0x2f4f4f, whitesmoke: 0xf5f5f5, darkgray: 0xa9a9a9, darkcyan: 0x008b8b, blueviolet: 0x8a2be2, gold: 0xffd700 }
@@ -295,58 +295,3 @@ function setup() {
         renderer.setSize(width, TEMP.canvasHeight)
     })
 }
-
-// ;(async () => {
-//     const font = await _loadFont('/public/corporate_logo_bold.json')
-
-//     const text = new TextGeometry('やり直す？', { font: font, size: 20, height: 1 })
-//     text.computeBoundingBox()
-//     const label = new THREE.Mesh(text, new THREE.MeshBasicMaterial({ color: _darkslategray, transparent: true }))
-//     label.position.x = (text.boundingBox.max.x - text.boundingBox.min.x) / 2
-
-//     const button = new THREE.Mesh(new THREE.CapsuleGeometry(40, 200, 4, 2), new THREE.MeshBasicMaterial({ color: _darkslategray, transparent: true, opacity: 0 }))
-//     button.position.copy(label.position).setY((text.boundingBox.max.y - text.boundingBox.min.y) / 2)
-//     button.rotation.set(Math.PI / 2, 0, Math.PI / 2)
-//     label.add(button)
-
-//     const canvas = document.createElement('canvas')
-//     document.getElementsByTagName('main')[0].appendChild(canvas)
-
-//     const scene = new THREE.Scene().add(label)
-//     scene.background = _whitesmoke
-    
-//     const width = canvas.clientWidth, height = canvas.clientHeight
-//     const camera = new THREE.OrthographicCamera(width  / -2, width  /  2, height /  2, height / -2)
-//     camera.position.set(0, 0, 10)
-
-//     const mouse = new THREE.Vector2()
-//     const raycaster = new THREE.Raycaster()
-
-//     canvas.addEventListener('mousemove', event => {
-//         const rect = canvas.getBoundingClientRect()
-//         mouse.set(
-//             ((event.clientX - rect.left) / (rect.right - rect.left)) * 2 - 1,
-//             -((event.clientY - rect.top) / (rect.bottom - rect.top)) * 2 + 1
-//         )
-//         raycaster.setFromCamera(mouse, camera)
-
-//         const objects = raycaster.intersectObjects(scene.children)
-//         if (objects.length) {
-//             console.log(objects);
-//             label.material.opacity = 0.75
-//             button.material.opacity = 0.25
-//         } else {
-//             label.material.opacity = 1
-//             button.material.opacity = 0
-//         }
-//     })
-
-//     const renderer = new THREE.WebGLRenderer({ 'canvas': canvas, 'alpha': true, 'antialias': true })
-//     renderer.setSize(width, height)
-//     renderer.setPixelRatio(window.devicePixelRatio)
-//     renderer.setAnimationLoop(time => {
-//         label.position.copy(camera.position).setZ(0)
-
-//         renderer.render(scene, camera)
-//     })
-// })();
