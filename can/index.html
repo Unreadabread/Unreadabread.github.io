@@ -11,70 +11,28 @@
 <meta property="og:title" content="炭酸しゃかしゃか">
 <link rel="icon" type="image/png" href="/public/small_can.png" sizes="32x32"/>
 <link rel="stylesheet" href="/public/framework_green.css">
-<style>
-	#help ol {
-		display: flex;
-		justify-content: space-evenly;
-	}
-
-	@media (max-width:830px) {
-	    #help ol {
-	        display: grid;
-	    }
-	}
-
-	#help li::marker {
-	    content: counter(list-item)' ';
-	    font-size: 1.5rem;
-	}
-</style>
-<script type="importmap">
-	{
-	  	"imports": {
-			"three": "https://unpkg.com/three@0.153.0/build/three.module.min.js",
-			"three/": "https://unpkg.com/three@0.153.0/examples/jsm/"
-	  	}
-	}
-</script>
+<script src="/public/framework.js"></script>
+<script type="importmap">{ "imports": {
+	"three": "https://cdn.jsdelivr.net/npm/three/build/three.module.min.js",
+	"three/": "https://cdn.jsdelivr.net/npm/three/"
+}}</script>
 <script type="module" src="/public/can/script.js"></script>
 <title>炭酸しゃかしゃか</title>
 
-<header>
-    <h1>Unreadabread</h1>
-	<ul>
-		<li><a href="/can">
-			<svg height="100" viewBox="0 0 346.79 512">
-				<use href="/public/icon.svg#can"/>
-			</svg>
-			<span>炭酸しゃかしゃか</span>
-		</a>
-		<!-- <li><a href="/train">
-			<img src="/public/train/icon_big.png">
-			<span>電車のりかえ(作り途中…)</span>
-		</a> -->
-	</ul>
-</header>
-
-<main>
+<main style="display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: 2rem; color: darkslategray;">
 	<canvas id="game" style="width: 100%; height: 480px; border-radius: 2rem; background-color: whitesmoke;">
 		<noscript>JavaScriptが有効じゃないみたい</noscript>
 	</canvas>
-	<nav id="help" style="margin-top: 2rem; padding: 1rem; text-align: center; font-weight: bold; border-radius: 2rem; color: darkslategray; background-color: whitesmoke;">
-		<h1>遊び方</h1>
-		<ol>
-			<li>真ん中の缶を10秒の間振る！
-			<li>上にスワイプして缶を投げる！
-			<li>何m飛んだかを見る
+	<nav style="flex-grow: 2; padding: 1rem 2rem; border-radius: 2rem; background-color: whitesmoke;">
+		<h1 style="text-align: center;">遊び方</h1>
+		<ol style="display: grid; justify-content: center; list-style-position: inside;">
+			<li>真ん中の缶を10秒の間振る！<li>缶を思いっきり上に投げる！<li>何m飛んだかを見る
 		</ol>
 	</nav>
+	<aside style="flex-grow: 1; padding: 1rem 2rem; border-radius: 2rem; background-color: whitesmoke;">
+		<h1 style="text-align: center;">My記録 Best 5</h1>
+		<ol id="record" style="display: grid; list-style-position: inside; word-spacing: 1rem;">
+			記録ナシ！
+		</ol>
+	</aside>
 </main>
-
-
-<footer>
-    <a href="https://github.com/Unreadabread/Unreadabread.github.io" target="_blank" rel="noopener noreferrer">
-        <svg width="15" viewBox="0 0 512 512">
-            <use href="/public/icon.svg#source"/>
-        </svg>
-        GITHUB
-    </a>
-</footer>
