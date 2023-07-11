@@ -21,8 +21,12 @@ html {
 }
 
 body {
+    display: grid;
+    grid: auto 1fr auto / auto;
+    gap: 3rem;
     min-width: 340px;
     min-height: 100vh;
+    color: whitesmoke;
     background-color: darkslategray;
 }
 
@@ -30,8 +34,8 @@ body {
     display: flex;
     align-items: center;
     transition: color .2s ease-out;
-    padding: 1em;
-    gap: .5em;
+    padding: 1rem;
+    gap: .5rem;
     color: currentColor;
 }
 
@@ -41,9 +45,11 @@ body {
 
 header, footer {
     display: flex;
-    padding: 0 10%;
-    color: whitesmoke;
     background-color: #172a2a;
+}
+
+header, main, footer {
+    padding: 0 10%;
 }
 
 header h1 {
@@ -65,10 +71,6 @@ header a:hover svg {
     transform: scale(1.2, 1.2) rotate(15deg);
 }
 
-main {
-    margin: 3em 10%;
-}
-
 footer {
     position: sticky;
     justify-content: end;
@@ -76,5 +78,5 @@ footer {
 }
 
 footer svg {
-    fill: lightgray;
+    fill: gray;
 }

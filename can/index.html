@@ -4,32 +4,39 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no,email=no,address=no">
-<meta name="description" content="炭酸の缶をいっぱいシャカシャカしてどれだけ高く飛ばせるかを競うゲームです">
+<meta name="description" content="炭酸の缶をいっぱい振ってどれだけ高く飛ばせるかを目指すゲームです">
+<meta name="keywords" content="炭酸,しゃかしゃか,振る,ゲーム">
 <meta name="theme-color" content="darkslategray">
-<meta property="og:url" content="https://unreadabread.github.io/">
+<meta property="og:site_name" content="Unreadabread">
+<meta property="og:title" content="炭酸しゃかしゃか - 炭酸を振って投げるゲーム">
 <meta property="og:type" content="website">
-<meta property="og:title" content="炭酸しゃかしゃか">
+<meta property="og:url" content="https://unreadabread.github.io/">
 <link rel="icon" type="image/png" href="/public/small_can.png" sizes="32x32"/>
-<link rel="stylesheet" href="/public/framework_green.css">
-<script src="/public/framework.js"></script>
+<link rel="stylesheet" href="/public/framework_green.css?v130">
+<style>
+	main * { border-radius: 2rem; background-color: whitesmoke; }
+	@keyframes rotation { to { rotate: 360deg; } }
+</style>
 <script type="importmap">{ "imports": {
-	"three": "https://cdn.jsdelivr.net/npm/three/build/three.module.min.js",
-	"three/": "https://cdn.jsdelivr.net/npm/three/"
+	"three": "https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.min.js",
+	"three/": "https://cdn.jsdelivr.net/npm/three@0.154.0/"
 }}</script>
 <script type="module" src="/public/can/script.js"></script>
 <title>炭酸しゃかしゃか</title>
 
 <main style="display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: 2rem; color: darkslategray;">
-	<canvas id="game" style="width: 100%; height: 480px; border-radius: 2rem; background-color: whitesmoke;">
-		<noscript>JavaScriptが有効じゃないみたい</noscript>
+	<canvas id="game" style="display: grid; width: 100%; height: 30rem;">
+		<noscript style="justify-self: center; align-self: center; font-size: 2rem; animation: rotation 5s cubic-bezier(.68,-0.55,.27,1.55) 1s infinite;">
+			JavaScriptが有効じゃないみたい
+		</noscript>
 	</canvas>
-	<nav style="flex-grow: 2; padding: 1rem 2rem; border-radius: 2rem; background-color: whitesmoke;">
+	<nav style="flex-grow: 2; padding: 1rem 2rem;">
 		<h1 style="text-align: center;">遊び方</h1>
 		<ol style="display: grid; justify-content: center; list-style-position: inside;">
 			<li>真ん中の缶を10秒の間振る！<li>缶を思いっきり上に投げる！<li>何m飛んだかを見る
 		</ol>
 	</nav>
-	<aside style="flex-grow: 1; padding: 1rem 2rem; border-radius: 2rem; background-color: whitesmoke;">
+	<aside style="flex-grow: 1; padding: 1rem 2rem;">
 		<h1 style="text-align: center;">My記録 Best 5</h1>
 		<ol id="record" style="display: grid; list-style-position: inside; word-spacing: 1rem;">
 			記録ナシ！
