@@ -10,7 +10,7 @@ import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 const TEMP = { pressed: false, entered: false, score: null, speed: 0, velocity: 0, closed: false, timeCount: 10, lastTime: 0, lastPressed: false, ground: false, splashed: false }
 
 // 読み込まれた後からあまり変わらない変数
-const LAZY = { font: null, fontSize: 0, can: new Group(), city: new Group(), default: { ...TEMP }, center: 125, record: [] }
+const LAZY = { font: null, can: new Group(), city: new Group(), default: { ...TEMP }, center: 125 }
 
 // 色。
 const COLOR = {
@@ -118,39 +118,43 @@ async function init() {
     }
 
     // canvas
-    stage.canvas.addEventListener('pointerdown', allDown)
+    stage.canvas.addEventListener('pointerdown', _allDown)
     stage.canvas.addEventListener('contextmenu', event => event.preventDefault())
 
-    function allDown(event) {
+    function _allDown(event) {
         for (const intersect of stage.intersectObjects(event.x, event.y, stage.scene.children)) {
             for (let object = intersect.object; object.parent; object = object.parent) {
-                if (object.parent == stage.scene) {
+                if (!_isObject(object.parent) && _isObject(object)) {
                     if (object.visible) object.dispatchEvent({ type: 'pointerdown', target: object, y: event.pageY })
                     break
                 }
             }
         }
     }
+    function _isObject(object) {
+        return object instanceof Group || object instanceof Mesh
+    }
 
     // camera
     stage.camera.position.set(0, LAZY.center, 10)
 
+    stage.scene.add(stage.camera)
+
     // renderer
     const _renderer = new WebGLRenderer({ canvas: stage.canvas, alpha: true, antialias: true })
     _renderer.setDrawingBufferSize(stage.canvas.clientWidth, stage.canvas.clientHeight, window.devicePixelRatio)
-    _renderer.setAnimationLoop(_loop)
+    _renderer.setAnimationLoop(_render)
 
     let _aspect = null
-    function _loop(time) {
+    function _render(time) {
         const aspect = stage.canvas.clientWidth / stage.canvas.clientHeight
         if (_aspect != aspect) {
             _aspect = aspect
             
             stage.camera.left   = -(stage.camera.right = stage.canvas.clientWidth  / 2)
             stage.camera.bottom = -(stage.camera.top   = stage.canvas.clientHeight / 2)
-            
-            LAZY.fontSize = Math.min(1, aspect)
-            
+
+            stage.scale = Math.min(1, aspect)
             stage.scene.dispatchEvent({ type: 'resize', target: stage.scene })
         }
         stage.camera.updateProjectionMatrix()
@@ -163,12 +167,13 @@ async function init() {
 
 function start(stage) {
     // label
-    const _label = new Mesh(new ExtrudeGeometry([], { depth: 1, bevelEnabled: false }), new MeshBasicMaterial({ color: COLOR.darkslategray, transparent: true }))
+    const _label = new Mesh(new ExtrudeGeometry([]), new MeshBasicMaterial({ color: COLOR.darkslategray, transparent: true }))
     {
-        stage.scene.add(_label)
+        stage.camera.add(_label)
+        _label.position.set(0, 100, -15)
+        _label.scale.setScalar(stage.scale)
         _setLabel({ text: _getText() })
-        _label.position.y = LAZY.center + 100
-        _label.position.z = -5
+
         stage.scene.addEventListener('render', flavor)
         stage.scene.addEventListener('resize', resize)
 
@@ -180,13 +185,12 @@ function start(stage) {
             }
         }
         function resize() {
-            _label.scale.setScalar(LAZY.fontSize)
+            _label.scale.setScalar(stage.scale)
             _toCenter(_label)
         }
     }
     function _setLabel({text, size = 30, color}) {
         if (text) {
-            _label.scale.setScalar(LAZY.fontSize)
             _label.geometry.copy(new ExtrudeGeometry(LAZY.font.generateShapes(text, size), { depth: 1, bevelEnabled: false }))
             _toCenter(_label)
         }
@@ -202,6 +206,7 @@ function start(stage) {
         window.addEventListener('pointermove', moving)
         window.addEventListener('pointerup', moved)
         stage.scene.addEventListener('render', game)
+        const record = []
 
         // 缶を追従させるようにします。
         function doMove({y}) {
@@ -263,10 +268,8 @@ function start(stage) {
     
                 if (LAZY.can.position.y >= LAZY.center) {
                     stage.camera.position.y = LAZY.can.position.y
-                    _label.position.y = stage.camera.position.y + 100
                 } else {
                     stage.camera.position.y = LAZY.center
-                    _label.position.y = LAZY.center + 100
                 }
             }
         }
@@ -310,12 +313,11 @@ function start(stage) {
         function showResult() {
             const total = Math.floor(TEMP.score)
             _setLabel({ text: `記録: ${total}m\n評価: ${_getRank(total).text}`, size: 20 })
-            _replay.position.y = stage.camera.position.y
             _replay.visible = true
     
             // 記録にも残す
-            LAZY.record.push({ score: total, current: true })
-            document.getElementById('record').innerHTML = LAZY.record.sort((left, right) => right.score - left.score).slice(0, 5).map(result => result.current && !(result.current = false) ? `<li>${result.score}m ←今のやつ` : `<li>${result.score}m`).join('')
+            record.push({ score: total, current: true })
+            document.getElementById('record').innerHTML = record.sort((left, right) => right.score - left.score).slice(0, 5).map(result => result.current && !(result.current = false) ? `<li>${result.score}m ←今のやつ` : `<li>${result.score}m`).join('')
         }
     }
 
@@ -332,10 +334,10 @@ function start(stage) {
         new MeshBasicMaterial({ color: COLOR.darkslategray, transparent: true })
     )
     {
-        stage.scene.add(_replay)
+        stage.camera.add(_replay)
         _replay.visible = false
-        _replay.position.z = 1
-        _replay.scale.setScalar(LAZY.fontSize)
+        _replay.position.z = -5
+        _replay.scale.setScalar(stage.scale)
         _toCenter(_replay)
         _replay.addEventListener('pointerdown', reinit)
         stage.canvas.addEventListener('pointermove', hover)
@@ -356,13 +358,11 @@ function start(stage) {
             if (!_replay.visible) return
             stage.canvas.style.cursor = 'default'
             _replay.visible = false
-            // _replay.position.y = 0 // stage.scene.removeしちゃうってことは〜、表示される前に調整しちゃえばいいわけで〜、これいらないってわけ〜
             Object.assign(TEMP, LAZY.default)
             _setLabel({ text: _getText(), color: COLOR.darkslategray })
             LAZY.can.position.y = LAZY.center
             LAZY.can.rotation.z = 0
             stage.camera.position.y = LAZY.center
-            _label.position.y = LAZY.center + 100
         }
         // ホバー関係
         function hover({x, y}) {
@@ -376,10 +376,10 @@ function start(stage) {
             button.visible = highlight
         }
         function resize() {
-            _replay.scale.setScalar(LAZY.fontSize)
+            _replay.scale.setScalar(stage.scale)
+            _replay.remove(button)
             _toCenter(_replay)
-            const {max, min} = _replay.userData.boundingBox
-            button.position.set((max.x - min.x) / 2, (max.y - min.y) / 2, 1)
+            _replay.add(button)
         }
     }
 }

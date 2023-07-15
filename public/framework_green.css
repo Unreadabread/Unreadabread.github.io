@@ -57,7 +57,22 @@ header h1 {
     padding: 0 1rem;
 }
 
-@media (max-width: 650px) {
+header :where(h1, span) {
+    transition: all .5s ease-in-out;
+}
+
+@media (max-width: 700px) {
+    header h1 {
+        font-size: 1.5rem;
+        padding: .5rem;
+    }
+    header span {
+        font-size: 0;
+        opacity: 0;
+    }
+}
+
+@media (max-width: 550px) {
     header span {
         display: none;
     }
