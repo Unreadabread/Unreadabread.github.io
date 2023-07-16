@@ -1,16 +1,13 @@
 import {
     Raycaster, DoubleSide, Box3, Vector2, Group, Color,
     WebGLRenderer, Scene, OrthographicCamera,
-    Mesh, MeshBasicMaterial, ShapeGeometry, CapsuleGeometry, ExtrudeGeometry, BufferGeometry, Vector3
+    Mesh, MeshBasicMaterial, ShapeGeometry, CapsuleGeometry, ExtrudeGeometry, BufferGeometry, Vector3, AnimationClip
 } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 
-// やり直す時に初期化される変数
-const TEMP = { pressed: false, entered: false, score: null, speed: 0, velocity: 0, closed: false, timeCount: 10, lastTime: 0, lastPressed: false, ground: false, splashed: false }
-
 // 読み込まれた後からあまり変わらない変数
-const LAZY = { font: null, can: new Group(), city: new Group(), default: { ...TEMP }, center: 125 }
+const LAZY = { font: null, can: new Group(), city: new Group(), mouse: new Group(), arrow: new Group(), center: 125 }
 
 // 色。
 const COLOR = {
@@ -95,6 +92,8 @@ async function load() {
         LAZY.font = await _loadFont('corporate_logo_bold')
         _loadSVG('can')
         _loadSVG('city', 0.75)
+        _loadSVG('mouse')
+        _loadSVG('arrow')
     } catch (exception) {
         console.error(exception)
     }
@@ -134,11 +133,11 @@ async function init() {
     function _isObject(object) {
         return object instanceof Group || object instanceof Mesh
     }
+    stage.canvas.addEventListener('resize', () => console.log('a'))
 
     // camera
-    stage.camera.position.set(0, LAZY.center, 10)
-
     stage.scene.add(stage.camera)
+    stage.camera.position.set(0, LAZY.center, 10)
 
     // renderer
     const _renderer = new WebGLRenderer({ canvas: stage.canvas, alpha: true, antialias: true })
@@ -173,17 +172,8 @@ function start(stage) {
         _label.position.set(0, 100, -15)
         _label.scale.setScalar(stage.scale)
         _setLabel({ text: _getText() })
-
-        stage.scene.addEventListener('render', flavor)
         stage.scene.addEventListener('resize', resize)
 
-        // ゲームが終わるか始まった時に透明度が変わったりするところ
-        function flavor({time}) {
-            if (TEMP.score == null || TEMP.splashed) {
-                const opacity = time % 5000 / 5000
-                _label.material.opacity = opacity <= 0.5 ? 1 - opacity : opacity
-            }
-        }
         function resize() {
             _label.scale.setScalar(stage.scale)
             _toCenter(_label)
@@ -202,123 +192,15 @@ function start(stage) {
         LAZY.can.position.y = LAZY.center
         LAZY.can.scale.set(0.2, -0.2, 0.2)
         LAZY.can.addEventListener('loaded', () => _toCenter(LAZY.can))
-        LAZY.can.addEventListener('pointerdown', doMove)
-        window.addEventListener('pointermove', moving)
-        window.addEventListener('pointerup', moved)
-        stage.scene.addEventListener('render', game)
-        const record = []
+    }
 
-        // 缶を追従させるようにします。
-        function doMove({y}) {
-            if (TEMP.lastPressed) return
-            TEMP.pressed = true
-            LAZY.can.position.y = stage.getCanPosition(y)
-    
-            if (TEMP.score == null) {
-                TEMP.score = 0
-                _label.material.opacity = 1
-            }
-        }
-        // 缶の動きをスコアにしたり、勢いにします。
-        function moving(event) {
-            if (!TEMP.pressed) return
-    
-            const position = stage.getCanPosition(event.pageY)
-            const movement = Math.abs(LAZY.can.position.y - position) / 5
-    
-            if (!TEMP.closed) TEMP.score += movement
-            else TEMP.velocity = movement
-    
-            LAZY.can.position.y = position
-        }
-        // 缶の位置を元に戻したりします
-        function moved() {
-            if (!TEMP.pressed) return
-            if (!TEMP.closed) LAZY.can.position.y = LAZY.center
-            else TEMP.speed = TEMP.velocity
-            TEMP.pressed = false
-        }
-        // 缶の動きを制御するところ
-        function game({time}) {
-            if (TEMP.score == null) return
-    
-            if (!TEMP.closed) countDown(time)
-            else if (!TEMP.splashed) splash(time)
-            else if (!fallCan(time) && !_replay.visible) showResult()
-        }
-        // 時間を数えたり、時間切れになるところ
-        function countDown(time) {
-            if (time - TEMP.lastTime <= 1000) return
-            TEMP.lastTime = time
-    
-            if (TEMP.timeCount > 0) _setLabel({ text: `${TEMP.timeCount--}` })
-            else if (TEMP.timeCount == 0) {
-                _setLabel({ text: '上にスワイプ！' })
-                TEMP.closed = true
-                TEMP.lastPressed = TEMP.pressed
-            }
-        }
-        // 缶を上に飛ばします
-        function splash(time) {
-            // 5秒以内に押せばギリギリなんとかできます
-            // それでも押さなければ勝手に飛んでいきます
-            if (!TEMP.lastPressed) TEMP.lastPressed = TEMP.pressed || time - TEMP.lastTime > 5000
-            else if (!TEMP.pressed) {
-                TEMP.ground ? blow(time) : throwing()
-    
-                if (LAZY.can.position.y >= LAZY.center) {
-                    stage.camera.position.y = LAZY.can.position.y
-                } else {
-                    stage.camera.position.y = LAZY.center
-                }
-            }
-        }
-        // 缶が上に投げられるところ
-        function throwing() {
-            TEMP.speed -= 0.1
-            LAZY.can.position.y += TEMP.speed
-    
-            if (Math.abs(TEMP.speed) > 10) TEMP.score += Math.abs(TEMP.speed) / 25
-    
-            if (0 >= LAZY.can.position.y) {
-                LAZY.can.position.y = 0
-                TEMP.ground = LAZY.a ? TEMP.score = COLOR.whitesmoke : true
-            }
-        }
-        // 上に吹っ飛ぶところ
-        function blow(time) {
-            LAZY.can.position.y += TEMP.score / 100
-    
-            if (LAZY.can.position.y >= TEMP.score) {
-                LAZY.can.position.y = TEMP.score
-                TEMP.lastTime = time
-                TEMP.splashed = true
-            }
-    
-            _setLabel({ text: `${Math.floor(LAZY.can.position.y)}m`, color: _getRank(LAZY.can.position.y).color })
-        }
-        // 缶が飛び終わって落ちるところ
-        function fallCan(time) {
-            if (time - TEMP.lastTime > 2000) return false
+    { // arrow
+        stage.camera.add(LAZY.arrow)
+        LAZY.arrow.position.set(50, 0, -5)
+        LAZY.arrow.scale.y = -1
 
-            const current = time - TEMP.lastTime
-            if (LAZY.can.position.y > 0) {
-                LAZY.can.position.y -= current / (current > 1000 ? 50000 : 5000) * stage.canvas.clientHeight
-                if (TEMP.score > LAZY.center) LAZY.can.rotation.z = current / 3000 * Math.PI
-            }
-            if (LAZY.can.position.y < 0) LAZY.can.position.y = 0
-            return true
-        }
-        // やり直すボタンが出るところ
-        function showResult() {
-            const total = Math.floor(TEMP.score)
-            _setLabel({ text: `記録: ${total}m\n評価: ${_getRank(total).text}`, size: 20 })
-            _replay.visible = true
-    
-            // 記録にも残す
-            record.push({ score: total, current: true })
-            document.getElementById('record').innerHTML = record.sort((left, right) => right.score - left.score).slice(0, 5).map(result => result.current && !(result.current = false) ? `<li>${result.score}m ←今のやつ` : `<li>${result.score}m`).join('')
-        }
+        // mouse
+        LAZY.arrow.add(LAZY.mouse)
     }
 
     { // city
@@ -339,7 +221,6 @@ function start(stage) {
         _replay.position.z = -5
         _replay.scale.setScalar(stage.scale)
         _toCenter(_replay)
-        _replay.addEventListener('pointerdown', reinit)
         stage.canvas.addEventListener('pointermove', hover)
         stage.scene.addEventListener('resize', resize)
 
@@ -353,33 +234,177 @@ function start(stage) {
             button.rotation.set(Math.PI / 2, 0, Math.PI / 2)
         }
 
-        // ここで起動時の状態に戻します。
-        function reinit() {
-            if (!_replay.visible) return
-            stage.canvas.style.cursor = 'default'
-            _replay.visible = false
-            Object.assign(TEMP, LAZY.default)
-            _setLabel({ text: _getText(), color: COLOR.darkslategray })
-            LAZY.can.position.y = LAZY.center
-            LAZY.can.rotation.z = 0
-            stage.camera.position.y = LAZY.center
-        }
+        let entered = false
+
         // ホバー関係
         function hover({x, y}) {
-            if (!_replay.visible || stage.intersectObjects(x, y, [ _replay ]).length != TEMP.entered) return
-            highlight(TEMP.entered)
-            TEMP.entered = !TEMP.entered
-        }
-        function highlight(highlight) {
-            stage.canvas.style.cursor = highlight ? 'pointer' : 'default'
-            _replay.material.opacity = highlight ? 0.75 : 1
-            button.visible = highlight
+            if (!_replay.visible || stage.intersectObjects(x, y, [ _replay ]).length != entered) return
+
+            stage.canvas.style.cursor = entered ? 'pointer' : 'default'
+            _replay.material.opacity = entered ? 0.75 : 1
+            button.visible = entered
+
+            entered = !entered
         }
         function resize() {
             _replay.scale.setScalar(stage.scale)
             _replay.remove(button)
             _toCenter(_replay)
             _replay.add(button)
+        }
+    }
+
+    { // game
+        LAZY.can.addEventListener('pointerdown', doMove)
+        _replay.addEventListener('pointerdown', replay)
+        window.addEventListener('pointermove', moving)
+        window.addEventListener('pointerup', moved)
+        stage.scene.addEventListener('render', game)
+
+        const record = []
+        let score = null
+        let velocity = 0
+        let timeCount = 0
+        let lastTime = 0
+        let ground = false
+        let splashed = false
+        let pressed = false
+        let lastPressed = null
+        
+        // 缶を追従させるところ
+        function doMove({y}) {
+            if (lastPressed) return
+            pressed = true
+            LAZY.can.position.y = stage.getCanPosition(y)
+    
+            if (score == null) {
+                score = 0
+                _label.material.opacity = 1
+                LAZY.arrow.visible = false
+            }
+        }
+        // 缶の動きをスコアにしたり、勢いにするところ
+        function moving({pageY}) {
+            if (!pressed) return
+    
+            const position = stage.getCanPosition(pageY)
+            const movement = Math.abs(LAZY.can.position.y - position) / 5
+    
+            if (lastPressed == null) score += movement
+            else velocity = movement
+    
+            LAZY.can.position.y = position
+        }
+        // 缶の位置を元に戻すところ
+        function moved() {
+            if (!pressed) return
+            if (lastPressed == null) LAZY.can.position.y = LAZY.center
+            pressed = false
+        }
+
+        // ゲームを制御するところ
+        function game({time}) {
+            if (score == null) standing(time)
+            else if (lastPressed == null) countDown(time)
+            else if (!splashed) splash(time)
+            else if (!fallCan(time) && !_replay.visible) showResult()
+        }
+        // 最初の画面のところ
+        function standing(time) {
+            const float = time % 2000 / 2000
+            LAZY.mouse.position.y = (float <= 0.5 ? float : 1 - float) * 4 - 1 * 10
+            
+            const opacity = time % 5000 / 5000
+            _label.material.opacity = opacity <= 0.5 ? 1 - opacity : opacity
+        }
+        // 時間を数えたり、時間切れになるところ
+        function countDown(time) {
+            if (time - lastTime <= 1000) return
+            lastTime = time
+    
+            if (timeCount < 10) _setLabel({ text: `${10 - timeCount++}` })
+            else {
+                _setLabel({ text: '上にスワイプ！' })
+                lastPressed = pressed
+            }
+        }
+        // 缶を上に飛ばします
+        function splash(time) {
+            // 5秒以内に押せばギリギリなんとかできます
+            // それでも押さなければ勝手に飛んでいきます
+            if (!lastPressed) lastPressed = pressed || time - lastTime > 5000
+            else if (!pressed) {
+                ground ? blow(time) : throwing()
+    
+                if (LAZY.can.position.y >= LAZY.center) {
+                    stage.camera.position.y = LAZY.can.position.y
+                } else {
+                    stage.camera.position.y = LAZY.center
+                }
+            }
+        }
+        // 缶が上に投げられるところ
+        function throwing() {
+            velocity -= 0.1
+            LAZY.can.position.y += velocity
+    
+            if (Math.abs(velocity) > 10) score += Math.abs(velocity) / 25
+    
+            if (0 >= LAZY.can.position.y) {
+                LAZY.can.position.y = 0
+                ground = LAZY.a ? score = COLOR.whitesmoke : true
+            }
+        }
+        // 上に吹っ飛ぶところ
+        function blow(time) {
+            LAZY.can.position.y += score / 100
+    
+            if (LAZY.can.position.y >= score) {
+                LAZY.can.position.y = score
+                lastTime = time
+                splashed = true
+            }
+    
+            _setLabel({ text: `${Math.floor(LAZY.can.position.y)}m`, color: _getRank(LAZY.can.position.y).color })
+        }
+        // 缶が飛び終わって落ちるところ
+        function fallCan(time) {
+            if (time - lastTime > 2000) return false
+
+            const current = time - lastTime
+            if (LAZY.can.position.y > 0) {
+                LAZY.can.position.y -= current / (current > 1000 ? 50000 : 5000) * stage.canvas.clientHeight
+                if (score > LAZY.center) LAZY.can.rotation.z = current / 3000 * Math.PI
+            }
+            if (LAZY.can.position.y < 0) LAZY.can.position.y = 0
+            return true
+        }
+        // やり直すボタンが出るところ
+        function showResult() {
+            const total = Math.floor(score)
+            _setLabel({ text: `記録: ${total}m\n評価: ${_getRank(total).text}`, size: 20 })
+            _replay.visible = true
+    
+            // 記録にも残す
+            record.push({ score: total, current: true })
+            document.getElementById('record').innerHTML = record.sort((left, right) => right.score - left.score).slice(0, 5).map(result => result.current && !(result.current = false) ? `<li>${result.score}m ←今のやつ` : `<li>${result.score}m`).join('')
+        }
+        // ここで起動時の状態に戻します。
+        function replay() {
+            if (!_replay.visible) return
+
+            stage.canvas.style.cursor = 'default'
+            
+            score = lastPressed = null
+            velocity = timeCount = lastTime = 0
+            pressed = ground = splashed = false
+
+            stage.camera.position.y = LAZY.center
+            _setLabel({ text: _getText(), color: COLOR.darkslategray })
+            LAZY.can.position.y = LAZY.center
+            LAZY.can.rotation.z = 0
+            LAZY.arrow.visible = true
+            _replay.visible = false
         }
     }
 }
