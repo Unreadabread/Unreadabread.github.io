@@ -1,58 +1,54 @@
-import {
-    Raycaster, DoubleSide, Box3, Vector2, Group, Color,
-    WebGLRenderer, Scene, OrthographicCamera,
-    Mesh, MeshBasicMaterial, ShapeGeometry, CapsuleGeometry, ExtrudeGeometry, BufferGeometry, Vector3, AnimationClip
-} from 'three'
+import * as THREE from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 
-// 読み込まれた後からあまり変わらない変数
-const LAZY = { font: null, can: new Group(), city: new Group(), mouse: new Group(), arrow: new Group(), center: 125 }
-
-// 色。
-const COLOR = {
-    darkslategray: new Color('darkslategray'),
-    whitesmoke:    new Color('whitesmoke'),
-    darkgray:      new Color('darkgray'),
-    darkcyan:      new Color('darkcyan'),
-    blueviolet:    new Color('blueviolet'),
-    gold:          new Color('gold')
-}
+// あとで読み込まれるやつ
+const LAZY = { font: null, can: new THREE.Group(), city: new THREE.Group(), mouse: new THREE.Group(), arrow: new THREE.Group() }
 
 // 高さに応じて色々褒めるやつ
+// 更新する場合facetype.jsでfont.jsonを作り直すこと。
 const RANK = {
-    0:     { color: COLOR.darkslategray, text: 'orz' },
-    2000:  { color: COLOR.darkgray,      text: 'よき' },
-    4000:  { color: COLOR.darkcyan,      text: 'いい感じ' },
-    7000:  { color: COLOR.blueviolet,    text: 'ヤバみあふれてる' },
-    10000: { color: COLOR.gold,          text: 'えぐみ限界突破してる' },
+    0    : { color: 'darkslategray', text: 'orz'              },
+    2000 : { color: 'darkgray',      text: 'よき'              },
+    4000 : { color: 'darkcyan',      text: 'いい感じ'           },
+    7000 : { color: 'blueviolet',    text: 'ヤバみあふれてる'    },
+    10000: { color: 'gold',          text: 'えぐみ限界突破してる' },
 }
 
-// ごく稀に入れ替わる最初の文字のやつ
-const TEXTS = [ 'ドラッグパットでやってみません？', '縦長モニターが欲しい', 'ズームしたって無駄です！', 'ズームアウトしても無駄です！', 'ミックスで振ってドラッグ！', '大空に羽ばたく缶…', '投げすぎるのもいカンでしょ' ]
+// 最初の文字のやつ。ごく稀に入れ替わります
+// 更新する場合facetype.jsでfont.jsonを作り直すこと。
+const TEXTS = [ 'ドラッグで振ってミックス！', 'ドラッグパットでやってみません？', '縦長モニターが欲しい', 'ズームしたって無駄です！', 'ズームアウトしても無駄です！', 'ミックスで振ってドラッグ！', '大空に羽ばたく缶…', '投げすぎるのもいカンでしょ' ]
 
 
 // 汚染を避けるために_を付けています。念の為。
-function _toCenter(object) {
+function _getBoundingBox(object, useGeometry = false) {
+    const geometry = object.geometry
+    if (useGeometry && geometry instanceof THREE.BufferGeometry) {
+        geometry.computeBoundingBox()
+        return geometry.boundingBox
+    }
     const data = object.userData.boundingBox
     // data.isBox3 もありですが、vscodeの型のマッピングが動作するのはこっちでした。
-    const box = data && data instanceof Box3 ? data : object.userData.boundingBox = new Box3()
-    const {max, min} = box.setFromObject(object)
-    object.position.x = (max.x - min.x) / -2
-}
-
-function _getText() {
-    return Math.random() > 0.1 ? 'ドラッグで振ってミックス！' : TEXTS[parseInt(Math.random() * TEXTS.length)]
+    const box = data && data instanceof THREE.Box3 ? data : object.userData.boundingBox = new THREE.Box3()
+    return box.setFromObject(object)
 }
 
 function _getRank(score) {
     return Object.entries(RANK).reverse().find(entry => entry[0] <= score)[1]
 }
 
+function _getText() {
+    const result = Math.random()
+    return TEXTS[result > 0.1 ? 0 : parseInt(result * 10 * TEXTS.length)]
+}
+
+
 const _loading = load()
+
 window.addEventListener('DOMContentLoaded', async () => {
     try {
-        start((await Promise.all([ _loading, init() ]))[1])
+        const stage = await Promise.all([ _loading, init() ])
+        start(stage[1])
     } catch (exception) {
         console.error(exception)
     }
@@ -67,29 +63,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     )
 })
 
-async function load() {
-    const _fontLoader = new FontLoader(), _svgLoader = new SVGLoader()
-    function _loadFont(name) {
-        return new Promise((resolve, reject) => _fontLoader.load(`/public/${name}.json`, resolve, undefined, reject))
-    }
 
-    function _loadSVG(name, opacity = undefined) {
-        return new Promise((resolve, reject) => _svgLoader.load(`/public/can/${name}.svg`, ({paths}) => {
-            for (const path of paths) {
-                const style = path.userData.style
-                const material = new MeshBasicMaterial({ side: DoubleSide, transparent: true, depthWrite:  false, color: style.fill != '#000' ? style.fill : COLOR.darkslategray, opacity: opacity !== undefined ? opacity : style.fillOpacity })
-                for (const shape of SVGLoader.createShapes(path)) {
-                    LAZY[name].add(new Mesh(new ShapeGeometry(shape), material))
-                }
-            }
-            LAZY[name].name = name
-            LAZY[name].dispatchEvent({ type: 'loaded', target: LAZY[name] })
-            resolve(LAZY[name])
-        }, undefined, reject))
-    }
+async function load() {
+    const _svgLoader = new SVGLoader()
 
     try {
-        LAZY.font = await _loadFont('corporate_logo_bold')
+        LAZY.font = await new FontLoader().loadAsync(`/src/can/font.json`)
         _loadSVG('can')
         _loadSVG('city', 0.75)
         _loadSVG('mouse')
@@ -97,76 +76,135 @@ async function load() {
     } catch (exception) {
         console.error(exception)
     }
+
+    // svgの読み込みはinit()と並行して行います。読み込めればloadedイベントが発火されます。
+    function _loadSVG(name, opacity) {
+        _svgLoader.load(`/src/can/${name}.svg`, ({paths}) => {
+            for (const path of paths) {
+                const style = path.userData.style
+                const material = new THREE.MeshBasicMaterial({
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    depthWrite: false,
+                    color: style.fill != '#000' ? style.fill : 'darkslategray',
+                    opacity: opacity !== undefined ? opacity : style.fillOpacity
+                })
+                for (const shape of SVGLoader.createShapes(path)) {
+                    LAZY[name].add(new THREE.Mesh(new THREE.ShapeGeometry(shape), material))
+                }
+            }
+            LAZY[name].name = name
+            LAZY[name].dispatchEvent({ type: 'loaded', target: LAZY[name] })
+        })
+    }
 }
 
 async function init() {
-    const _raycaster = new Raycaster()
+    const _raycaster = new THREE.Raycaster()
     const stage = {
         canvas: document.getElementById('game'),
-        camera: new OrthographicCamera(),
-        scene: new Scene(),
+        camera: new THREE.OrthographicCamera(),
+        scene: new THREE.Scene(),
+        center: 125,
         intersectObjects(x, y, objects) {
             const rect = stage.canvas.getBoundingClientRect()
-            _raycaster.setFromCamera(new Vector2(((x - rect.left) / (rect.right - rect.left)) * 2 - 1, ((y - rect.top) / (rect.bottom - rect.top)) * -2 + 1), stage.camera)
+            _raycaster.setFromCamera(new THREE.Vector2(((x - rect.left) / (rect.right - rect.left)) * 2 - 1, ((y - rect.top) / (rect.bottom - rect.top)) * -2 + 1), stage.camera)
             return _raycaster.intersectObjects(objects)
         },
         // かなりゴリ押しです。
         getCanPosition(y) {
-            return Math.max(-12.5, Math.min(365.5, -(y - stage.canvas.clientHeight - LAZY.center / 2)))
+            return Math.max(-12.5, Math.min(365.5, -(y - stage.canvas.clientHeight - stage.center / 2)))
         }
     }
 
-    // canvas
-    stage.canvas.addEventListener('pointerdown', _allDown)
-    stage.canvas.addEventListener('contextmenu', event => event.preventDefault())
+    { // canvas
+        stage.canvas.addEventListener('pointerdown', _select)
+        stage.canvas.addEventListener('contextmenu', event => event.preventDefault())
 
-    function _allDown(event) {
-        for (const intersect of stage.intersectObjects(event.x, event.y, stage.scene.children)) {
-            for (let object = intersect.object; object.parent; object = object.parent) {
-                if (!_isObject(object.parent) && _isObject(object)) {
-                    if (object.visible) object.dispatchEvent({ type: 'pointerdown', target: object, y: event.pageY })
-                    break
+        function _select(event) {
+            for (const intersect of stage.intersectObjects(event.x, event.y, stage.scene.children)) {
+                for (let object = intersect.object; object.parent; object = object.parent) {
+                    if (!_isObject(object.parent) && _isObject(object)) {
+                        if (object.visible) object.dispatchEvent({ type: 'pointerdown', target: object, y: event.pageY })
+                        break
+                    }
                 }
             }
         }
-    }
-    function _isObject(object) {
-        return object instanceof Group || object instanceof Mesh
-    }
-    stage.canvas.addEventListener('resize', () => console.log('a'))
 
-    // camera
-    stage.scene.add(stage.camera)
-    stage.camera.position.set(0, LAZY.center, 10)
-
-    // renderer
-    const _renderer = new WebGLRenderer({ canvas: stage.canvas, alpha: true, antialias: true })
-    _renderer.setDrawingBufferSize(stage.canvas.clientWidth, stage.canvas.clientHeight, window.devicePixelRatio)
-    _renderer.setAnimationLoop(_render)
-
-    let _aspect = null
-    function _render(time) {
-        const aspect = stage.canvas.clientWidth / stage.canvas.clientHeight
-        if (_aspect != aspect) {
-            _aspect = aspect
-            
-            stage.camera.left   = -(stage.camera.right = stage.canvas.clientWidth  / 2)
-            stage.camera.bottom = -(stage.camera.top   = stage.canvas.clientHeight / 2)
-
-            stage.scale = Math.min(1, aspect)
-            stage.scene.dispatchEvent({ type: 'resize', target: stage.scene })
+        function _isObject(object) {
+            return object instanceof THREE.Group || object instanceof THREE.Mesh
         }
-        stage.camera.updateProjectionMatrix()
-
-        stage.scene.dispatchEvent({ type: 'render', target: stage.scene, time: time })
-        _renderer.render(stage.scene, stage.camera)
     }
+
+    { // camera
+        stage.scene.add(stage.camera)
+        stage.camera.position.set(0, stage.center, 10)
+    }
+
+    { // renderer
+        const _renderer = new THREE.WebGLRenderer({ canvas: stage.canvas, alpha: true, antialias: true })
+        _renderer.setDrawingBufferSize(stage.canvas.clientWidth, stage.canvas.clientHeight, window.devicePixelRatio)
+        _renderer.setAnimationLoop(_render)
+
+        let _aspect = null
+
+        function _render(time) {
+            const aspect = stage.canvas.clientWidth / stage.canvas.clientHeight
+            if (_aspect != aspect) {
+                _aspect = aspect
+
+                stage.camera.left   = -(stage.camera.right = stage.canvas.clientWidth  / 2)
+                stage.camera.bottom = -(stage.camera.top   = stage.canvas.clientHeight / 2)
+
+                stage.scale = Math.min(1, aspect)
+                stage.scene.dispatchEvent({ type: 'resize', target: stage.scene })
+            }
+            stage.camera.updateProjectionMatrix()
+
+            stage.scene.dispatchEvent({ type: 'render', target: stage.scene, time: time })
+            _renderer.render(stage.scene, stage.camera)
+        }
+    }
+
+    // svg系はここで初期化します。
+    { // can
+        stage.scene.add(LAZY.can)
+        LAZY.can.position.y = stage.center
+        LAZY.can.scale.set(0.2, -0.2, 0.2)
+        LAZY.can.addEventListener('loaded', _toCenter.bind(null, LAZY.can))
+    }
+
+    { // arrow
+        stage.camera.add(LAZY.arrow)
+        LAZY.arrow.position.set(50, 0, -5)
+        LAZY.arrow.scale.y = -1
+        LAZY.arrow.addEventListener('loaded', _toCenter.bind(null, LAZY.arrow))
+
+        { // mouse
+            LAZY.arrow.add(LAZY.mouse)
+            LAZY.mouse.addEventListener('loaded', _toCenter.bind(null, LAZY.mouse))
+        }
+    }
+
+    { // city
+        stage.scene.add(LAZY.city)
+        LAZY.city.position.z = -10
+        LAZY.city.scale.y = -1
+        LAZY.city.addEventListener('loaded', _toCenter.bind(null, LAZY.city))
+    }
+
+    function _toCenter(object) {
+        const {max, min} = _getBoundingBox(object)
+        object.position.x = (max.x - min.x) / -2
+    }
+
     return stage
 }
 
 function start(stage) {
     // label
-    const _label = new Mesh(new ExtrudeGeometry([]), new MeshBasicMaterial({ color: COLOR.darkslategray, transparent: true }))
+    const _label = new THREE.Mesh(new THREE.ExtrudeGeometry([]), new THREE.MeshBasicMaterial({ color: 'darkslategray', transparent: true }))
     {
         stage.camera.add(_label)
         _label.position.set(0, 100, -15)
@@ -174,63 +212,42 @@ function start(stage) {
         _setLabel({ text: _getText() })
         stage.scene.addEventListener('resize', resize)
 
+        // ゲーム画面の幅が変わった時に文字の大きさを調整します。
         function resize() {
             _label.scale.setScalar(stage.scale)
-            _toCenter(_label)
+            const {max, min} = _getBoundingBox(_label, true)
+            _label.position.x = (max.x - min.x) / -2 * stage.scale
         }
     }
     function _setLabel({text, size = 30, color}) {
         if (text) {
-            _label.geometry.copy(new ExtrudeGeometry(LAZY.font.generateShapes(text, size), { depth: 1, bevelEnabled: false }))
-            _toCenter(_label)
+            _label.geometry.copy(new THREE.ExtrudeGeometry(LAZY.font.generateShapes(text, size), { depth: 1, bevelEnabled: false }))
+            const {max, min} = _getBoundingBox(_label, true)
+            _label.position.x = (max.x - min.x) / -2 * stage.scale
         }
         if (color) _label.material.color.set(color)
     }
 
-    { // can
-        stage.scene.add(LAZY.can)
-        LAZY.can.position.y = LAZY.center
-        LAZY.can.scale.set(0.2, -0.2, 0.2)
-        LAZY.can.addEventListener('loaded', () => _toCenter(LAZY.can))
-    }
-
-    { // arrow
-        stage.camera.add(LAZY.arrow)
-        LAZY.arrow.position.set(50, 0, -5)
-        LAZY.arrow.scale.y = -1
-
-        // mouse
-        LAZY.arrow.add(LAZY.mouse)
-    }
-
-    { // city
-        stage.scene.add(LAZY.city)
-        LAZY.city.position.z = -10
-        LAZY.city.scale.y = -1
-        LAZY.city.addEventListener('loaded', () => _toCenter(LAZY.city))
-    }
-
     // replay
-    const _replay = new Mesh(
-        new ExtrudeGeometry(LAZY.font.generateShapes('やり直す？', 20), { depth: 1, bevelEnabled: false }),
-        new MeshBasicMaterial({ color: COLOR.darkslategray, transparent: true })
+    const _replay = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(LAZY.font.generateShapes('やり直す？', 20), { depth: 1, bevelEnabled: false }),
+        new THREE.MeshBasicMaterial({ color: 'darkslategray', transparent: true })
     )
     {
         stage.camera.add(_replay)
         _replay.visible = false
         _replay.position.z = -5
-        _replay.scale.setScalar(stage.scale)
-        _toCenter(_replay)
+        const {max, min} = _getBoundingBox(_replay, true)
+        _replay.position.x = (max.x - min.x) / -2
+
         stage.canvas.addEventListener('pointermove', hover)
-        stage.scene.addEventListener('resize', resize)
 
         // 後ろのうっすら出てくるところ
-        const button = new Mesh(new CapsuleGeometry(40, 200, 4, 2), new MeshBasicMaterial({ color: COLOR.darkslategray, transparent: true, opacity: 0.25 }))
+        const button = new THREE.Mesh(new THREE.CapsuleGeometry(40, 200, 4, 2), new THREE.MeshBasicMaterial({ color: 'darkslategray', transparent: true, opacity: 0.25 }))
         {
             _replay.add(button)
             button.visible = false
-            const {max, min} = _replay.userData.boundingBox
-            button.position.set((max.x - min.x) / 2, (max.y - min.y) / 2, 1)
+            button.position.set(-_replay.position.x, (max.y - min.y) / 2, 1)
             button.rotation.set(Math.PI / 2, 0, Math.PI / 2)
         }
 
@@ -246,20 +263,14 @@ function start(stage) {
 
             entered = !entered
         }
-        function resize() {
-            _replay.scale.setScalar(stage.scale)
-            _replay.remove(button)
-            _toCenter(_replay)
-            _replay.add(button)
-        }
     }
 
-    { // game
+    { // ゲームの動作をさせるところ
         LAZY.can.addEventListener('pointerdown', doMove)
-        _replay.addEventListener('pointerdown', replay)
         window.addEventListener('pointermove', moving)
         window.addEventListener('pointerup', moved)
         stage.scene.addEventListener('render', game)
+        _replay.addEventListener('pointerdown', replay)
 
         const record = []
         let score = null
@@ -270,13 +281,13 @@ function start(stage) {
         let splashed = false
         let pressed = false
         let lastPressed = null
-        
+
         // 缶を追従させるところ
         function doMove({y}) {
             if (lastPressed) return
             pressed = true
             LAZY.can.position.y = stage.getCanPosition(y)
-    
+
             if (score == null) {
                 score = 0
                 _label.material.opacity = 1
@@ -289,16 +300,16 @@ function start(stage) {
     
             const position = stage.getCanPosition(pageY)
             const movement = Math.abs(LAZY.can.position.y - position) / 5
-    
+
             if (lastPressed == null) score += movement
             else velocity = movement
-    
+
             LAZY.can.position.y = position
         }
         // 缶の位置を元に戻すところ
         function moved() {
             if (!pressed) return
-            if (lastPressed == null) LAZY.can.position.y = LAZY.center
+            if (lastPressed == null) LAZY.can.position.y = stage.center
             pressed = false
         }
 
@@ -313,7 +324,7 @@ function start(stage) {
         function standing(time) {
             const float = time % 2000 / 2000
             LAZY.mouse.position.y = (float <= 0.5 ? float : 1 - float) * 4 - 1 * 10
-            
+
             const opacity = time % 5000 / 5000
             _label.material.opacity = opacity <= 0.5 ? 1 - opacity : opacity
         }
@@ -321,7 +332,7 @@ function start(stage) {
         function countDown(time) {
             if (time - lastTime <= 1000) return
             lastTime = time
-    
+
             if (timeCount < 10) _setLabel({ text: `${10 - timeCount++}` })
             else {
                 _setLabel({ text: '上にスワイプ！' })
@@ -335,11 +346,11 @@ function start(stage) {
             if (!lastPressed) lastPressed = pressed || time - lastTime > 5000
             else if (!pressed) {
                 ground ? blow(time) : throwing()
-    
-                if (LAZY.can.position.y >= LAZY.center) {
+
+                if (LAZY.can.position.y >= stage.center) {
                     stage.camera.position.y = LAZY.can.position.y
                 } else {
-                    stage.camera.position.y = LAZY.center
+                    stage.camera.position.y = stage.center
                 }
             }
         }
@@ -347,24 +358,24 @@ function start(stage) {
         function throwing() {
             velocity -= 0.1
             LAZY.can.position.y += velocity
-    
+
             if (Math.abs(velocity) > 10) score += Math.abs(velocity) / 25
-    
+
             if (0 >= LAZY.can.position.y) {
                 LAZY.can.position.y = 0
-                ground = LAZY.a ? score = COLOR.whitesmoke : true
+                ground = LAZY.a ? score = Math.PI ** 14 : true
             }
         }
         // 上に吹っ飛ぶところ
         function blow(time) {
             LAZY.can.position.y += score / 100
-    
+
             if (LAZY.can.position.y >= score) {
                 LAZY.can.position.y = score
                 lastTime = time
                 splashed = true
             }
-    
+
             _setLabel({ text: `${Math.floor(LAZY.can.position.y)}m`, color: _getRank(LAZY.can.position.y).color })
         }
         // 缶が飛び終わって落ちるところ
@@ -374,7 +385,7 @@ function start(stage) {
             const current = time - lastTime
             if (LAZY.can.position.y > 0) {
                 LAZY.can.position.y -= current / (current > 1000 ? 50000 : 5000) * stage.canvas.clientHeight
-                if (score > LAZY.center) LAZY.can.rotation.z = current / 3000 * Math.PI
+                if (score > stage.center) LAZY.can.rotation.z = current / 3000 * Math.PI
             }
             if (LAZY.can.position.y < 0) LAZY.can.position.y = 0
             return true
@@ -384,24 +395,26 @@ function start(stage) {
             const total = Math.floor(score)
             _setLabel({ text: `記録: ${total}m\n評価: ${_getRank(total).text}`, size: 20 })
             _replay.visible = true
-    
+            if (LAZY.a) return
+
             // 記録にも残す
             record.push({ score: total, current: true })
             document.getElementById('record').innerHTML = record.sort((left, right) => right.score - left.score).slice(0, 5).map(result => result.current && !(result.current = false) ? `<li>${result.score}m ←今のやつ` : `<li>${result.score}m`).join('')
         }
+
         // ここで起動時の状態に戻します。
         function replay() {
             if (!_replay.visible) return
 
             stage.canvas.style.cursor = 'default'
-            
+
             score = lastPressed = null
             velocity = timeCount = lastTime = 0
             pressed = ground = splashed = false
 
-            stage.camera.position.y = LAZY.center
-            _setLabel({ text: _getText(), color: COLOR.darkslategray })
-            LAZY.can.position.y = LAZY.center
+            stage.camera.position.y = stage.center
+            _setLabel({ text: _getText(), color: 'darkslategray' })
+            LAZY.can.position.y = stage.center
             LAZY.can.rotation.z = 0
             LAZY.arrow.visible = true
             _replay.visible = false

@@ -5,10 +5,6 @@
     padding: 0;
     border: 0;
     text-decoration-line: none;
-    user-select: none;
-    -moz-user-select: -moz-none;
-    -webkit-user-drag: none;
-    -webkit-user-select: none;
     scrollbar-width: none;
     touch-action: manipulation;
     -ms-touch-action: manipulation;
@@ -50,6 +46,15 @@ header, footer {
 
 header, main, footer {
     padding: 0 10%;
+}
+
+canvas {
+    user-select: none;
+    -moz-user-select: -moz-none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    -ms-touch-action: none;
 }
 
 header h1 {

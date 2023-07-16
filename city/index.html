@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="jp">
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no,email=no,address=no">
+<!-- <meta name="description" content="炭酸の缶をいっぱい振ってどれだけ高く飛ばせるかを目指すゲームです"> -->
+<!-- <meta name="keywords" content="炭酸,しゃかしゃか,振る,ゲーム"> -->
+<meta name="theme-color" content="darkslategray">
+<meta property="og:site_name" content="Unreadabread">
+<!-- <meta property="og:title" content="炭酸しゃかしゃか - 炭酸を振って投げるゲーム"> -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://unreadabread.github.io/">
+<!-- <link rel="icon" type="image/png" href="/src/small_can.png" sizes="32x32"/> -->
+<link rel="stylesheet" href="/src/framework_green.css?v130">
+<style>
+	main * { border-radius: 2rem; background-color: whitesmoke; }
+	@keyframes rotation { to { rotate: 360deg; } }
+</style>
+<script type="importmap">{ "imports": {
+	"three": "https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.min.js",
+	"three/": "https://cdn.jsdelivr.net/npm/three@0.154.0/",
+	"three/MeshLine": "/src/MeshLine.js"
+}}</script>
+<script type="module" src="/src/city/script.js"></script>
+<title>まちげー</title>
+
+<header>
+    <h1>Unreadabread</h1>
+    <a href="/can" tabindex>
+        <svg height="2em" viewBox="0 0 340 512">
+            <use href="/src/icon.svg#can"/>
+        </svg>
+        <span>炭酸しゃかしゃか</span>
+    </a>
+	<!--
+	<a href="/train">
+        <img src="/src/train/icon_big.png">
+        <span>電車のりかえ(作り途中…)</span>
+    </a>
+	-->
+</header>
+
+<main style="display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: 2rem; color: darkslategray;">
+	<canvas id="game" style="display: grid; width: 100%; height: 30rem;">
+		<noscript style="justify-self: center; align-self: center; font-size: 2rem; animation: rotation 5s cubic-bezier(.68,-0.55,.27,1.55) 1s infinite;">
+			JavaScriptが有効じゃないみたい
+		</noscript>
+	</canvas>
+	<nav style="flex-grow: 2; padding: 1rem 2rem;">
+		<h1 style="text-align: center;">遊び方</h1>
+		<ol style="display: grid; justify-content: center; list-style-position: inside;">
+			<li>スーパー建てまくる
+		</ol>
+	</nav>
+	<aside style="flex-grow: 1; padding: 1rem 2rem;">
+		<h1 style="text-align: center;">My記録 Best 5</h1>
+		<ol id="record" style="display: grid; list-style-position: inside; word-spacing: 1rem;">
+			記録ナシ！
+		</ol>
+	</aside>
+</main>
+
+<footer>
+    <a href="https://github.com/Unreadabread/Unreadabread.github.io" target="_blank" rel="noopener noreferrer" tabindex>
+        <svg viewBox="0 0 512 512" style="height: 1rem;">
+            <use href="/src/icon.svg#source"/>
+        </svg>
+        GITHUB
+    </a>
+</footer>
