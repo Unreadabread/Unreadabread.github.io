@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 // あとで読み込まれるやつ
 const LAZY = { font: null, can: new THREE.Group(), city: new THREE.Group(), mouse: new THREE.Group(), arrow: new THREE.Group() }
@@ -140,6 +141,7 @@ async function init() {
     { // camera
         stage.scene.add(stage.camera)
         stage.camera.position.set(0, stage.center, 10)
+        // new OrbitControls(stage.camera, stage.canvas)
     }
 
     { // renderer
@@ -177,13 +179,14 @@ async function init() {
 
     { // arrow
         stage.camera.add(LAZY.arrow)
-        LAZY.arrow.position.set(50, 0, -5)
-        LAZY.arrow.scale.y = -1
-        LAZY.arrow.addEventListener('loaded', _toCenter.bind(null, LAZY.arrow))
+        LAZY.arrow.position.set(60, 0, -1)
+        LAZY.arrow.scale.set(1.75, -1.75, 1.75)
 
         { // mouse
             LAZY.arrow.add(LAZY.mouse)
-            LAZY.mouse.addEventListener('loaded', _toCenter.bind(null, LAZY.mouse))
+            LAZY.mouse.position.x = -2
+            LAZY.mouse.scale.set(0.4, 0.4, 0.4)
+            LAZY.mouse.renderOrder = 1
         }
     }
 
@@ -322,8 +325,10 @@ function start(stage) {
         }
         // 最初の画面のところ
         function standing(time) {
-            const float = time % 2000 / 2000
-            LAZY.mouse.position.y = (float <= 0.5 ? float : 1 - float) * 4 - 1 * 10
+            const frame = time % 2000 / 2000
+            const float = (frame <= 0.5 ? frame : 1 - frame) * 2
+            const ease = float < 0.5 ? 2 * float * float : 1 - Math.pow(-2 * float + 2, 2) / 2
+            LAZY.mouse.position.y = 10.75 + ease * 10
 
             const opacity = time % 5000 / 5000
             _label.material.opacity = opacity <= 0.5 ? 1 - opacity : opacity
@@ -416,7 +421,6 @@ function start(stage) {
             _setLabel({ text: _getText(), color: 'darkslategray' })
             LAZY.can.position.y = stage.center
             LAZY.can.rotation.z = 0
-            LAZY.arrow.visible = true
             _replay.visible = false
         }
     }
