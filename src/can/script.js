@@ -34,6 +34,12 @@ function _getBoundingBox(object, useGeometry = false) {
     return box.setFromObject(object)
 }
 
+// 0~1を加速減速に変換します
+function _easeInOut(value) {
+    value = (value < 0.5 ? value : 1 - value) * 2
+    return value < 0.5 ? 2 * value * value : 1 - Math.pow(-2 * value + 2, 2) / 2
+}
+
 function _getRank(score) {
     return Object.entries(RANK).reverse().find(entry => entry[0] <= score)[1]
 }
@@ -239,33 +245,19 @@ function start(stage) {
     {
         stage.camera.add(_replay)
         _replay.visible = false
-        _replay.position.z = -5
         const {max, min} = _getBoundingBox(_replay, true)
         _replay.position.x = (max.x - min.x) / -2
+        _replay.position.z = -5
+    }
 
-        stage.canvas.addEventListener('pointermove', hover)
-
-        // 後ろのうっすら出てくるところ
-        const button = new THREE.Mesh(new THREE.CapsuleGeometry(40, 200, 4, 2), new THREE.MeshBasicMaterial({ color: 'darkslategray', transparent: true, opacity: 0.25 }))
-        {
-            _replay.add(button)
-            button.visible = false
-            button.position.set(-_replay.position.x, (max.y - min.y) / 2, 1)
-            button.rotation.set(Math.PI / 2, 0, Math.PI / 2)
-        }
-
-        let entered = false
-
-        // ホバー関係
-        function hover({x, y}) {
-            if (!_replay.visible || stage.intersectObjects(x, y, [ _replay ]).length != entered) return
-
-            stage.canvas.style.cursor = entered ? 'pointer' : 'default'
-            _replay.material.opacity = entered ? 0.75 : 1
-            button.visible = entered
-
-            entered = !entered
-        }
+    // 後ろのうっすら出てくるところ
+    const _button = new THREE.Mesh(new THREE.CapsuleGeometry(40, 200, 4, 2), new THREE.MeshBasicMaterial({ color: 'darkslategray', transparent: true, opacity: 0.25 }))
+    {
+        _replay.add(_button)
+        _button.visible = false
+        const {max, min} = _replay.geometry.boundingBox
+        _button.position.set(-_replay.position.x, (max.y - min.y) / 2, 0)
+        _button.rotation.set(Math.PI / 2, 0, Math.PI / 2)
     }
 
     { // ゲームの動作をさせるところ
@@ -273,6 +265,7 @@ function start(stage) {
         window.addEventListener('pointermove', moving)
         window.addEventListener('pointerup', moved)
         stage.scene.addEventListener('render', game)
+        stage.canvas.addEventListener('pointermove', hover)
         _replay.addEventListener('pointerdown', replay)
 
         const record = []
@@ -321,17 +314,12 @@ function start(stage) {
             if (score == null) standing(time)
             else if (lastPressed == null) countDown(time)
             else if (!splashed) splash(time)
-            else if (!fallCan(time) && !_replay.visible) showResult()
+            else if (!fallCan(time)) showResult(time)
         }
         // 最初の画面のところ
         function standing(time) {
-            const frame = time % 2000 / 2000
-            const float = (frame <= 0.5 ? frame : 1 - frame) * 2
-            const ease = float < 0.5 ? 2 * float * float : 1 - Math.pow(-2 * float + 2, 2) / 2
-            LAZY.mouse.position.y = 10.75 + ease * 10
-
-            const opacity = time % 5000 / 5000
-            _label.material.opacity = opacity <= 0.5 ? 1 - opacity : opacity
+            LAZY.mouse.position.y = 10.75 + _easeInOut(time % 2000 / 2000) * 10
+            _label.material.opacity = (_easeInOut(time % 5000 / 5000) + 0.75) * 0.5
         }
         // 時間を数えたり、時間切れになるところ
         function countDown(time) {
@@ -396,15 +384,30 @@ function start(stage) {
             return true
         }
         // やり直すボタンが出るところ
-        function showResult() {
+        function showResult(time) {
+            if (_replay.visible) {
+                _label.material.opacity = (_easeInOut(time % 5000 / 5000) + 0.75) * 0.5
+                return
+            }
             const total = Math.floor(score)
             _setLabel({ text: `記録: ${total}m\n評価: ${_getRank(total).text}`, size: 20 })
             _replay.visible = true
+            _replay.position.y = 0
+            if (_button.visible) stage.canvas.style.cursor = 'pointer'
             if (LAZY.a) return
 
             // 記録にも残す
             record.push({ score: total, current: true })
             document.getElementById('record').innerHTML = record.sort((left, right) => right.score - left.score).slice(0, 5).map(result => result.current && !(result.current = false) ? `<li>${result.score}m ←今のやつ` : `<li>${result.score}m`).join('')
+        }
+
+        // ホバー関係
+        function hover({x, y}) {
+            if (splashed == null || stage.intersectObjects(x, y, [ _button ]).length == _button.visible) return
+
+            _button.visible = !_button.visible
+            if (_replay.visible) stage.canvas.style.cursor = _button.visible ? 'pointer' : 'default'
+            _replay.material.opacity = _button.visible ? 0.75 : 1
         }
 
         // ここで起動時の状態に戻します。
@@ -421,6 +424,7 @@ function start(stage) {
             _setLabel({ text: _getText(), color: 'darkslategray' })
             LAZY.can.position.y = stage.center
             LAZY.can.rotation.z = 0
+            _replay.position.y = 1000
             _replay.visible = false
         }
     }
